@@ -1,6 +1,6 @@
 # Warcaby
 
-##Opis zadania
+## Opis zadania
 * Okno z siatką przycisków 8x8 oraz przyciskiem do resetowania gry.
 * Przyciski reprezentują pola planszy do gry w warcaby. Pola puste - przyciski bez
 tekstu. Pola z pionkami gracza 1 - przycisk z tekstem “C”. Pola z pionkami gracza
@@ -16,7 +16,7 @@ dziedziczących po klasie Pionek.
 “Wygrał gracz 2”, zależnie kto wygrał grę. Możliwe jest zresetowanie planszy
 bez zamykania głównego okna.
    
-##Testy
+## Testy
 1. Wykonanie po dwa ruchy przez każdego z graczy.
 2. Niepowodzenie błędnego ruchu pionkiem.
 3. Wykonanie bicia pojedynczego pionka.
