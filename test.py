@@ -19,7 +19,7 @@ class Game():
 
         self.turncanvas = tk.Canvas(parent, width=150, height=30, background='white', borderwidth=self.border_size,
                                     relief='solid', highlightbackground='white')
-        self.label = tk.Label(self.turncanvas, text='Tura gracza 1')
+        self.label = tk.Label(self.turncanvas)
         self.change_player_turn()
         self.turncanvas.pack()
         self.player_turn()
@@ -39,7 +39,7 @@ class Game():
         self.scorelabel = tk.Label(self.footercanvas, text='Wynik:\nBialy: ' + whitescore + '\nCzarny: ' + blackscore,
                                    anchor=tk.NW)
         self.resetbutton = tk.Button(self.footercanvas, text='Reset', anchor=tk.N, font=('Arial', 25),
-                                     command=lambda: self.change_player_turn())
+                                     command=lambda: self.buttonGrid())
         self.footercanvas.pack()
         self.scorelabel.place(x=0, y=0, height=100, width=150)
         self.resetbutton.place(x=370, y=0, height=50, width=100)
@@ -58,20 +58,26 @@ class Game():
         self.buttonGrid()
 
     def buttonGrid(self):
+        self.state = 0
+        self.label['text'] = 'Tura gracza 1'
         for i in range(self.rows):
             for j in range(self.columns):
                 if((i + j) % 2 == 1):
-                    self.buttons[i][j].place(x=i*self.size + 3, y=j*self.size + 43, width=self.size, height=self.size)
+                    self.buttons[i][j].place(x = i * self.size + 3, y = j * self.size + 43, width = self.size, height = self.size)
 
                     self.buttons[i][j]['command'] = lambda x = j, y = i: self.action(x, y)
                     if(j < 3):
                         self.buttons[i][j]['text'] = 'C'
-                    if (j >= self.columns - 3):
+                    elif (j >= self.columns - 3):
                         self.buttons[i][j]['text'] = 'B'
+                    else:
+                        self.buttons[i][j]['text'] = ''
+
 
     def action(self, x, y):
         if(self.processAction(x, y)):
             self.state = (self.state + 1) % 4
+        self.change_player_turn()
 
     def processAction(self, x, y):
         pawn = self.buttons[y][x]['text']
@@ -114,11 +120,10 @@ class Game():
         self.label.place(x=5, y=5, height=30, width=150)
 
     def change_player_turn(self):
-        if self.label['text'] == 'Tura gracza 1':
-            self.label['text'] = 'Tura gracza 2'
-        else:
+        if(self.state == 0 or self.state == 1):
             self.label['text'] = 'Tura gracza 1'
-
+        if (self.state == 2 or self.state == 3):
+            self.label['text'] = 'Tura gracza 2'
 
 def main():
     root = tk.Tk()
