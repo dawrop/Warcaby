@@ -10,6 +10,18 @@ PLAYER_1_SELECT = f"[{PLAYER_1}]"
 PLAYER_2_SELECT = f"[{PLAYER_2}]"
 
 
+class Figure():
+    pass
+
+
+class Pawn(Figure):
+    pass
+
+
+class Queen(Figure):
+    pass
+
+
 class Game():
     def __init__(self, parent, rows=8, columns=8, color1='white', color2='grey', size=64):
         self.rows = rows
@@ -117,9 +129,13 @@ class Game():
                     if(efekt == 'z'):
                         self.currentPawn = self.buttons[y][x]
                         self.currentPawn['text'] = PLAYER_1_SELECT
+                        self.currentPawn.x = x
+                        self.currentPawn.y = y
                         return False
                     else:
                         self.currentPawn = None
+                else:
+                    return False
 
                 return True
 
@@ -145,11 +161,16 @@ class Game():
                     if (efekt == 'z'):
                         self.currentPawn = self.buttons[y][x]
                         self.currentPawn['text'] = PLAYER_2_SELECT
+                        self.currentPawn.x = x
+                        self.currentPawn.y = y
                         return False
                     else:
                         self.currentPawn = None
+                else:
+                    return False
 
                 return True
+
 
     def check_valid_move(self, yc, xc, yn, xn):
         enemy = ''
@@ -185,11 +206,11 @@ class Game():
             zmienna = self.buttons[xc - 1][yc + direction]
             if (zmienna['text'] == enemy or zmienna['text'] == enemyQueen):
                 zmienna['text'] = ''
-                # TODO dodac zliczanie pkt
+                #TODO dodac zliczanie pkt
                 return 'z'
             else:
                 return False
-
+        #TODO dodac messageboxa ze ruch niedozwolony
         return False
 
     def player_turn(self):
