@@ -1,8 +1,17 @@
 import tkinter as tk
 from tkinter import messagebox
 
+PLAYER_1 = '♟'
+PLAYER_2 = '♙'
+PLAYER_1_QUEEN = '♛'
+PLAYER_2_QUEEN = '♕'
+
+PLAYER_1_SELECT = f"[{PLAYER_1}]"
+PLAYER_2_SELECT = f"[{PLAYER_2}]"
+
+
 class Game():
-    def __init__(self, parent, rows=8, columns=8, color1='white', color2='black', size=64):
+    def __init__(self, parent, rows=8, columns=8, color1='white', color2='grey', size=64):
         self.rows = rows
         self.columns = columns
         self.color1 = color1
@@ -27,9 +36,8 @@ class Game():
         self.canvas = tk.Canvas(parent, width=canvas_width, height=canvas_height, background='white',
                                 borderwidth=self.border_size, relief='solid', highlightbackground='white')
         self.canvas.pack()
-        self.buttons = [[tk.Button(bg='BLACK', activebackground='BLACK', fg='white') for x in range(self.rows)] for y in range(self.columns)]
+        self.buttons = [[tk.Button(bg='grey', activebackground='grey', fg='white', font=('Arial', 30, 'bold')) for x in range(self.rows)] for y in range(self.columns)]
         self.draw_board()
-
 
         whitescore = str(5)
         blackscore = str(7)
@@ -63,58 +71,126 @@ class Game():
         for i in range(self.rows):
             for j in range(self.columns):
                 if((i + j) % 2 == 1):
-                    self.buttons[i][j].place(x = i * self.size + 3, y = j * self.size + 43, width = self.size, height = self.size)
-
+                    self.buttons[i][j].place(x=i * self.size + 4, y=j * self.size + 44, width=self.size, height=self.size)
                     self.buttons[i][j]['command'] = lambda x = j, y = i: self.action(x, y)
+
                     if(j < 3):
-                        self.buttons[i][j]['text'] = 'C'
+                        self.buttons[i][j]['text'] = PLAYER_1
+                        self.buttons[i][j]['fg'] = 'black'
                     elif (j >= self.columns - 3):
-                        self.buttons[i][j]['text'] = 'B'
+                        self.buttons[i][j]['text'] = PLAYER_2
+                        self.buttons[i][j]['fg'] = 'white'
                     else:
                         self.buttons[i][j]['text'] = ''
 
-
     def action(self, x, y):
+        print(x, y)
         if(self.processAction(x, y)):
             self.state = (self.state + 1) % 4
+        if(self.buttons[y][x]['text'] == PLAYER_1 or self.buttons[y][x]['text'] == PLAYER_1_SELECT):
+            self.buttons[y][x]['fg'] = 'black'
+        else:
+            self.buttons[y][x]['fg'] = 'white'
         self.change_player_turn()
 
     def processAction(self, x, y):
-        pawn = self.buttons[y][x]['text']
-        print(x,y,pawn)
-        if(self.state == 0 and pawn == 'C'):
-            self.buttons[y][x]['text'] = '[C]'
+        pawn = self.buttons[y][x]
+        #print(x, y, pawn)
+        if(self.state == 0 and pawn['text'] == PLAYER_1):
+            self.buttons[y][x]['text'] = PLAYER_1_SELECT
             self.currentPawn = self.buttons[y][x]
+            self.currentPawn.x = x
+            self.currentPawn.y = y
             return True
 
         if(self.state == 1):
-            if(pawn == '[C]'):
-                self.buttons[y][x]['text'] = 'C'
+            if(pawn == self.currentPawn):
+                self.buttons[y][x]['text'] = PLAYER_1
                 self.currentPawn = None
                 self.state = self.state - 1
                 return False
-            if(pawn == ''):
-                self.buttons[y][x]['text'] = 'C'
-                self.currentPawn['text'] = ''
-                self.currentPawn = None
+            if(pawn['text'] == ''):
+                efekt = self.check_valid_move(self.currentPawn.x, self.currentPawn.y, x, y)
+                if(efekt):
+                    self.buttons[y][x]['text'] = PLAYER_1
+                    self.currentPawn['text'] = ''
+                    if(efekt == 'z'):
+                        self.currentPawn = self.buttons[y][x]
+                        self.currentPawn['text'] = PLAYER_1_SELECT
+                        return False
+                    else:
+                        self.currentPawn = None
+
                 return True
 
-        if (self.state == 2 and pawn == 'B'):
-            self.buttons[y][x]['text'] = '[B]'
+        if (self.state == 2 and pawn['text'] == PLAYER_2):
+            self.buttons[y][x]['text'] = PLAYER_2_SELECT
             self.currentPawn = self.buttons[y][x]
+            self.currentPawn.x = x
+            self.currentPawn.y = y
             return True
 
         if (self.state == 3):
-            if (pawn == '[B]'):
-                self.buttons[y][x]['text'] = 'B'
+            if (pawn == self.currentPawn):
+                self.buttons[y][x]['text'] = PLAYER_2
                 self.currentPawn = None
                 self.state = self.state - 1
                 return False
-            if (pawn == ''):
-                self.buttons[y][x]['text'] = 'B'
-                self.currentPawn['text'] = ''
-                self.currentPawn = None
+            if (pawn['text'] == ''):
+                efekt = self.check_valid_move(self.currentPawn.x, self.currentPawn.y, x, y)
+                print(efekt)
+                if(efekt):
+                    self.buttons[y][x]['text'] = PLAYER_2
+                    self.currentPawn['text'] = ''
+                    if (efekt == 'z'):
+                        self.currentPawn = self.buttons[y][x]
+                        self.currentPawn['text'] = PLAYER_2_SELECT
+                        return False
+                    else:
+                        self.currentPawn = None
+
                 return True
+
+    def check_valid_move(self, yc, xc, yn, xn):
+        enemy = ''
+        enemyQueen = ''
+        direction = 0
+
+        #player1
+        if (self.state == 0 or self.state == 1):
+            enemy = PLAYER_2
+            enemyQueen = PLAYER_2_QUEEN
+            direction = 1
+
+        #player2
+        if (self.state == 2 or self.state == 3):
+            enemy = PLAYER_1
+            enemyQueen = PLAYER_1_QUEEN
+            direction = -1
+
+        if(yn - yc == direction) and (xn - xc == 1):
+            return 'p'
+        if(yn - yc == direction) and (xn - xc == -1):
+            return 'p'
+        if(yn - yc == 2 * direction) and (xn - xc == 2):
+            zmienna = self.buttons[xc + 1][yc + direction]
+            if(zmienna['text'] == enemy or zmienna['text'] == enemyQueen):
+                zmienna['text'] = ''
+                #TODO dodac zliczanie pkt
+                return 'z'
+            else:
+                return False
+
+        if (yn - yc == 2 * direction) and (xn - xc == - 2):
+            zmienna = self.buttons[xc - 1][yc + direction]
+            if (zmienna['text'] == enemy or zmienna['text'] == enemyQueen):
+                zmienna['text'] = ''
+                # TODO dodac zliczanie pkt
+                return 'z'
+            else:
+                return False
+
+        return False
 
     def player_turn(self):
         self.label.place(x=5, y=5, height=30, width=150)
@@ -124,6 +200,7 @@ class Game():
             self.label['text'] = 'Tura gracza 1'
         if (self.state == 2 or self.state == 3):
             self.label['text'] = 'Tura gracza 2'
+
 
 def main():
     root = tk.Tk()
