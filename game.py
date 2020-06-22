@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
+import math
 
 PLAYER_1 = '♟'
 PLAYER_2 = '♙'
@@ -8,18 +9,8 @@ PLAYER_2_QUEEN = '♕'
 
 PLAYER_1_SELECT = f"[{PLAYER_1}]"
 PLAYER_2_SELECT = f"[{PLAYER_2}]"
-
-
-class Figure():
-    pass
-
-
-class Pawn(Figure):
-    pass
-
-
-class Queen(Figure):
-    pass
+PLAYER_1_QUEEN_SELECT = f"[{PLAYER_1_QUEEN}]"
+PLAYER_2_QUEEN_SELECT = f"[{PLAYER_2_QUEEN}]"
 
 
 class Game():
@@ -113,7 +104,8 @@ class Game():
     def action(self, x, y):
         if (self.processAction(x, y)):
             self.state = (self.state + 1) % 4
-        if (self.buttons[y][x]['text'] == PLAYER_1 or self.buttons[y][x]['text'] == PLAYER_1_SELECT):
+        if self.buttons[y][x]['text'] == PLAYER_1 or self.buttons[y][x]['text'] == PLAYER_1_SELECT \
+               or self.buttons[y][x]['text'] == PLAYER_1_QUEEN or self.buttons[y][x]['text'] == PLAYER_1_QUEEN_SELECT:
             self.buttons[y][x]['fg'] = 'black'
         else:
             self.buttons[y][x]['fg'] = 'white'
@@ -126,9 +118,17 @@ class Game():
             self.currentPawn = self.buttons[y][x]
             return True
 
+        if (self.state == 0 and pawn['text'] == PLAYER_1_QUEEN):
+            self.buttons[y][x]['text'] = PLAYER_1_QUEEN_SELECT
+            self.currentPawn = self.buttons[y][x]
+            return True
+
         if (self.state == 1):
-            if (pawn == self.currentPawn):
-                self.buttons[y][x]['text'] = PLAYER_1
+            if pawn == self.currentPawn:
+                if self.currentPawn['text'] == PLAYER_1_QUEEN_SELECT:
+                    self.buttons[y][x]['text'] = PLAYER_1_QUEEN
+                else:
+                    self.buttons[y][x]['text'] = PLAYER_1
                 self.currentPawn = None
                 self.state = self.state - 1
                 return False
@@ -136,11 +136,17 @@ class Game():
             if (pawn['text'] == ''):
                 efekt = self.check_valid_move(self.currentPawn.x, self.currentPawn.y, x, y)
                 if (efekt):
-                    self.buttons[y][x]['text'] = PLAYER_1
+                    if x == 7 or self.currentPawn['text'] == PLAYER_1_QUEEN_SELECT:
+                        self.buttons[y][x]['text'] = PLAYER_1_QUEEN
+                    else:
+                        self.buttons[y][x]['text'] = PLAYER_1
                     self.currentPawn['text'] = ''
                     if (efekt == 'z'):
                         self.currentPawn = self.buttons[y][x]
-                        self.currentPawn['text'] = PLAYER_1_SELECT
+                        if self.currentPawn['text'] == PLAYER_1_QUEEN:
+                            self.currentPawn['text'] = PLAYER_1_QUEEN_SELECT
+                        else:
+                            self.currentPawn['text'] = PLAYER_1_SELECT
                         self.blackscore = self.blackscore + 1
                         self.update_score()
                         end(self.blackscore, self.whitescore)
@@ -156,9 +162,17 @@ class Game():
             self.currentPawn = self.buttons[y][x]
             return True
 
+        if (self.state == 2 and pawn['text'] == PLAYER_2_QUEEN):
+            self.buttons[y][x]['text'] = PLAYER_2_QUEEN_SELECT
+            self.currentPawn = self.buttons[y][x]
+            return True
+
         if (self.state == 3):
-            if (pawn == self.currentPawn):
-                self.buttons[y][x]['text'] = PLAYER_2
+            if pawn == self.currentPawn:
+                if self.currentPawn['text'] == PLAYER_2_QUEEN_SELECT:
+                    self.buttons[y][x]['text'] = PLAYER_2_QUEEN
+                else:
+                    self.buttons[y][x]['text'] = PLAYER_2
                 self.currentPawn = None
                 self.state = self.state - 1
                 return False
@@ -166,11 +180,17 @@ class Game():
                 efekt = self.check_valid_move(self.currentPawn.x, self.currentPawn.y, x, y)
                 # print(efekt)
                 if (efekt):
-                    self.buttons[y][x]['text'] = PLAYER_2
+                    if x == 0 or self.currentPawn['text'] == PLAYER_2_QUEEN_SELECT:
+                        self.buttons[y][x]['text'] = PLAYER_2_QUEEN
+                    else:
+                        self.buttons[y][x]['text'] = PLAYER_2
                     self.currentPawn['text'] = ''
                     if (efekt == 'z'):
                         self.currentPawn = self.buttons[y][x]
-                        self.currentPawn['text'] = PLAYER_2_SELECT
+                        if self.currentPawn['text'] == PLAYER_2_QUEEN:
+                            self.currentPawn['text'] = PLAYER_2_QUEEN_SELECT
+                        else:
+                            self.currentPawn['text'] = PLAYER_2_SELECT
                         self.whitescore = self.whitescore + 1
                         self.update_score()
                         end(self.blackscore, self.whitescore)
@@ -185,6 +205,7 @@ class Game():
         enemy = ''
         enemyQueen = ''
         direction = 0
+        isQueen = self.buttons[xc][yc]['text'] in (PLAYER_1_QUEEN_SELECT, PLAYER_2_QUEEN_SELECT)
 
         # player1
         if (self.state == 0 or self.state == 1):
@@ -197,6 +218,32 @@ class Game():
             enemy = PLAYER_1
             enemyQueen = PLAYER_1_QUEEN
             direction = -1
+
+        if isQueen:
+            if abs(yn - yc) != abs(xn - xc):
+                return False
+            if abs(yn - yc) == 1:
+                return 'p'
+            dy = int(math.copysign(1, yn - yc))
+            dx = int(math.copysign(1, xn - xc))
+            zmienna = self.buttons[xn - dx][yn - dy]
+            if (zmienna['text'] == enemy or zmienna['text'] == enemyQueen):
+                for i in range(2, abs(yn - yc)):
+                    y = yn - dy * i
+                    x = xn - dx * i
+                    if self.buttons[x][y]['text'] != '':
+                        messagebox.showerror(title='Błąd', message='Ruch niedozwolony')
+                        return False
+                zmienna['text'] = ''
+                return 'z'
+            else:
+                for i in range(1, abs(yn - yc)):
+                    y = yn - dy * i
+                    x = xn - dx * i
+                    if self.buttons[x][y]['text'] != '':
+                        messagebox.showerror(title='Błąd', message='Ruch niedozwolony')
+                        return False
+                return 'p'
 
         if (yn - yc == direction) and (xn - xc == 1):
             return 'p'
